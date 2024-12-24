@@ -1,45 +1,65 @@
-// import React, { useState } from "react";
-// import "./ChapterPage.css";
-
-// function ChapterPage() {
-//   const [theme, setTheme] = useState("light");
-
-//   const toggleTheme = () => {
-//     setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
-//   };
-
-//   return (
-//     <div className={`chapter-page ${theme}`}>
-//       <button onClick={toggleTheme}>
-//         Switch to {theme === "light" ? "Dark" : "Light"} Mode
-//       </button>
-//       <h1>Chapter Title</h1>
-//       <p>
-//         This is the chapter content. It will be fetched dynamically from the
-//         backend.
-//       </p>
-//       <div>
-//         <h3>Comments</h3>
-//         {/* Add a comments component */}
-//       </div>
-//       <div>
-//         <h3>Reactions</h3>
-//         {/* Add reactions component */}
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default ChapterPage;
-
-import React from "react";
-import "./ChapterPage.css"; // Ensure this file exists
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+import { Container, Typography, Slider, Box } from "@mui/material";
 
 function ChapterPage() {
+  const { bookId, chapterId } = useParams();
+  const [chapter, setChapter] = useState(null);
+  const [fontSize, setFontSize] = useState(16);
+
+  useEffect(() => {
+    const fetchChapter = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:5003/api/chapters/${chapterId}`
+        );
+        setChapter(response.data);
+      } catch (error) {
+        console.error("Error fetching chapter:", error);
+      }
+    };
+
+    fetchChapter();
+  }, [chapterId]);
+
+  const handleFontSizeChange = (event, newValue) => {
+    setFontSize(newValue);
+  };
+
   return (
-    <div>
-      <h1>Chapter Page</h1>
-    </div>
+    <Container>
+      {chapter && (
+        <>
+          <Box mb={4}>
+            <Typography variant="h4" gutterBottom>
+              {chapter.title}
+            </Typography>
+            <Typography variant="subtitle1" color="textSecondary" gutterBottom>
+              Chapter of Book ID: {bookId}
+            </Typography>
+          </Box>
+          <Box mb={4}>
+            <Typography variant="h6" gutterBottom>
+              Adjust Font Size
+            </Typography>
+            <Slider
+              value={fontSize}
+              onChange={handleFontSizeChange}
+              aria-labelledby="font-size-slider"
+              min={12}
+              max={36}
+              valueLabelDisplay="auto"
+            />
+          </Box>
+          <Box>
+            <Typography variant="body1" style={{ fontSize: `${fontSize}px` }}>
+              {chapter.content}
+            </Typography>
+          </Box>
+        </>
+      )}
+    </Container>
   );
 }
 

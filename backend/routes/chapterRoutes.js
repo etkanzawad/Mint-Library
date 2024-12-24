@@ -1,21 +1,18 @@
 const express = require("express");
-const {
-  authenticateToken,
-  verifyAdmin,
-} = require("../middleware/authMiddleware");
 const Chapter = require("../models/Chapter");
 
 const router = express.Router();
 
-// Add a chapter
-router.post("/", authenticateToken, verifyAdmin, async (req, res) => {
-  const { title, content, isPaid, bookId } = req.body;
+// Get a specific chapter
+router.get("/:chapterId", async (req, res) => {
   try {
-    const chapter = new Chapter({ title, content, isPaid, bookId });
-    await chapter.save();
-    res.status(201).json(chapter);
+    const chapter = await Chapter.findById(req.params.chapterId);
+    if (!chapter) {
+      return res.status(404).json({ message: "Chapter not found" });
+    }
+    res.json(chapter);
   } catch (error) {
-    res.status(500).json({ message: "Error adding chapter", error });
+    res.status(500).json({ message: "Error fetching chapter", error });
   }
 });
 
